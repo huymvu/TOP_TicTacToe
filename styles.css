@@ -1,0 +1,17 @@
+#gameboard{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    /* border: 1px solid black; */
+}
+.square{
+    border:1px solid black;
+    width: 30%;
+    height: 30%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 80px;
+}
