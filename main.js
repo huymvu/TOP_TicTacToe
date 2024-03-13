@@ -1,31 +1,36 @@
+// Function to handle the game initialization and start button click event
 (function gameIntro() {
+    // Get DOM elements
     const startButton = document.querySelector('.start-button');
     const introPage = document.querySelector('.intro-page');
     const gameboardContainer = document.querySelector('.gameboard-container')
     const playerOneNameInput = document.getElementById('player-one-name');
     const playerTwoNameInput = document.getElementById('player-two-name');
 
+    // Event listener for the start button click
     startButton.addEventListener('click', function () {
+        // Get player names from input fields
         const playerOneName = playerOneNameInput.value.trim();
         const playerTwoName = playerTwoNameInput.value.trim();
-        console.log(playerOneName);
 
+        // Hide intro page and display game board
         introPage.style.display = 'none';
-
-        // Display game board
         gameboardContainer.style.display = '';
 
+        // Change player names in the game
         game.changePlayersName(playerOneName, playerTwoName);
-        displayBoard.announce(`${game.getActivePlayer().name}'s turn.`);
+        // Display current player turn 
+        display.announce(`${game.getActivePlayer().name}'s turn...`);
     })
-
 })();
 
+// Function to create the game board
 function Gameboard() {
     const rows = 3;
     const columns = 3;
     const gameboard = [];
 
+    // Create the board matrix
     for (let i = 0; i < rows; i++) {
         gameboard[i] = [];
         for (let j = 0; j < columns; j++) {
@@ -33,12 +38,15 @@ function Gameboard() {
         }
     }
 
+    // Get the game board
     const getBoard = () => gameboard;
+    // Function to mark a cell with a player's mark
 
     const playerMark = (row, column, player) => {
         gameboard[row][column].addMark(player);
     }
 
+    // Function to reset the game board
     const resetBoard = () => {
         gameboard.map((row) => row.map((cell) => cell.resetValue()));
     }
@@ -49,7 +57,7 @@ function Gameboard() {
     }
 }
 
-
+// Function to create a cell in the game board
 function Cell() {
     let value = "";
 
@@ -70,8 +78,9 @@ function Cell() {
     };
 }
 
+// Function to control the game logic
 function GameController(playerOneName = "Player One", playerTwoName = "Player Two") {
-    const gameboard = Gameboard();
+    // Players information
     const players = [
         {
             name: playerOneName,
@@ -83,8 +92,10 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
         }
     ];
 
+    // Active player
     let activePlayer = players[0];
 
+    // Function to change player names
     const changePlayersName = (playerOne, playerTwo) => {
         if (playerOne == "" || playerTwo == "") {
             players[0].name = "Player One";
@@ -96,14 +107,18 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
 
     };
 
+    // Variable to track game end
     let gameEnded = false;
 
+    // Function to switch player turn
     const switchPlayerTurn = () => {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     };
 
+    // Function to get active player
     const getActivePlayer = () => activePlayer;
 
+    // Function to check for winning row
     const checkRow = () => {
         for (let row = 0; row < gameboard.getBoard()[0].length; row++) {
             if (gameboard.getBoard()[row].every((cell) => cell.getValue() === getActivePlayer().mark)) {
@@ -113,6 +128,7 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
         return false;
     }
 
+    // Function to check for winning column
     const checkColumn = () => {
         for (let column = 0; column < gameboard.getBoard()[0].length; column++) {
             let count = 0;
@@ -128,6 +144,7 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
         return false;
     }
 
+    // Function to check for winning diagonal
     const checkDiag = () => {
         const downwardDiagMark = [];
         const upwardDiagMark = [];
@@ -154,57 +171,66 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
         }
     }
 
+    // Function to check for win
     const checkWin = () => {
         if (checkRow() === true || checkColumn() === true || checkDiag() === true) {
             return true;
         }
     }
 
+    // Function to check for tie
     const checkTie = () => {
         if (gameboard.getBoard().every((row) => row.every((cell) => cell.getValue() !== ""))) {
             return true;
         }
     }
+
+    // Function to end the game y switching the tracking variable
     const gameEnd = () => {
         gameEnded = true;
     }
+
+    // Function to start the game by switching the tracking variable
     const gameStart = () => {
         gameEnded = false;
     }
 
+    // Function to play a round
     const playRound = (row, column) => {
         if (gameEnded) {
             return;
         };
 
         if (gameboard.getBoard()[row][column].getValue() !== "") {
-            console.log("Cell is not empty, please choose another cell");
-            console.log(`${getActivePlayer().name} please try again`);
+            display.announce("Cell is not empty, please choose another cell");
+            display.announce(`${getActivePlayer().name} please try again`);
             return;
         }
         gameboard.playerMark(row, column, getActivePlayer().mark);
         if (checkWin() === true) {
-            console.log(`${getActivePlayer().name} win!`);
+            display.announce(`${activePlayer.name} Win!`);
             gameEnd();
             return;
         } else if (checkTie() === true) {
-            console.log("Tie Game!");
+            display.announce(`Tie Game!`);
             gameEnd();
             return;
         } else {
             switchPlayerTurn();
-
         }
+        display.announce(`${getActivePlayer().name}'s turn...`);
     }
 
+    // Function to reset the game board
     const resetBoard = () => {
         gameboard.resetBoard();
     }
+
+    // Return an object with the announce function to allow external access
     return {
         playRound,
         getActivePlayer,
         changePlayersName,
-        getBoard: gameboard.getBoard(),
         resetBoard,
         checkWin,
         checkTie,
@@ -212,19 +238,20 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
     };
 }
 
-(function ScreenController() {
-    const game = GameController();
-    const board = game.getBoard;
+// Function to control the screen interactions during the game
+function ScreenController() {
+    // Get the game board, gameboard div, announce div, and restart button
+    const board = gameboard.getBoard();
     const gameboardDiv = document.querySelector(".gameboard");
     const announceDiv = document.querySelector(".announce");
     const restartButton = document.querySelector(".restart-button");
 
+    // Function to update the screen based on the current state of the game board
     const updateScreen = () => {
+        // Clear the gameboardDiv before updating
         gameboardDiv.textContent = "";
 
-        const activePlayer = game.getActivePlayer();
-        announceDiv.textContent = `${activePlayer.name}'s turn...`
-
+        // Iterate through the board and create buttons to represent each cell
         board.forEach((row, rowIndex) => {
             row.forEach((cell, columnIndex) => {
                 const cellButton = document.createElement("button");
@@ -235,30 +262,50 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
                 gameboardDiv.appendChild(cellButton);
             })
         })
-
-        if (game.checkWin() === true) {
-            announceDiv.textContent = `${activePlayer.name} Win!`;
-        } else if (game.checkTie() === true) {
-            announceDiv.textContent = `Tie Game!`;
-        }
     }
 
+    // Event listener for clicks on the game board
     const clickHandlerBoard = (e) => {
         const selectedRow = e.target.dataset.row;
         const selectedColumn = e.target.dataset.column;
+        // Call playRound function when a cell is clicked
         game.playRound(selectedRow, selectedColumn);
+        // Update the screen after each move
         updateScreen();
     }
+    // Add event listener to the game board for clicks
     gameboardDiv.addEventListener("click", clickHandlerBoard);
 
+    // Function to reset the game when the restart button is clicked
     const resetGame = () => {
+        // Clear the contents of all cells
         const cells = document.querySelectorAll(".cell");
         cells.forEach((cell) => cell.textContent = "");
+        // Reset the game board
         game.resetBoard();
         game.gameStart();
     }
+
+    // Add event listener to the restart button
     restartButton.addEventListener("click", resetGame);
 
-    updateScreen();
-})();
+    // Function to display messages in the announce div
+    function announce(message) {
+        announceDiv.textContent = message;
+    }
 
+    // Initial update of the screen
+    updateScreen();
+
+    // Return an object with the announce function to allow external access
+    return {
+        announce,
+    }
+};
+
+// Initialize the game board
+const gameboard = Gameboard();
+// Initialize the screen controller and get the announce function
+const display = ScreenController();
+// Initialize the game controller
+const game = GameController();
